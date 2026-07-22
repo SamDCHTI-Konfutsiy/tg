@@ -36,10 +36,32 @@ def get_session(chat_id):
     return sessions[chat_id]
 
 
+def safe_handler(func):
+    """Wrap a handler so any unexpected exception is logged AND the
+    user gets a friendly message in chat, instead of the bot going
+    silent for that action."""
+    def wrapper(update, *args, **kwargs):
+        try:
+            return func(update, *args, **kwargs)
+        except Exception:
+            log.exception("Handler xatosi: %s", func.__name__)
+            try:
+                chat_id = update.message.chat.id if hasattr(update, "message") else update.chat.id
+                bot.send_message(
+                    chat_id,
+                    "⚠️ Kutilmagan xatolik yuz berdi. /start yozib qayta urinib ko'ring.\n"
+                    "Muammo davom etsa, texnik jurnalni (loglarni) tekshiring.",
+                )
+            except Exception:
+                log.exception("Foydalanuvchiga xato haqida xabar berib bo'lmadi")
+    return wrapper
+
+
 # --------------------------------------------------------------------
 # /start
 # --------------------------------------------------------------------
 @bot.message_handler(commands=["start"])
+@safe_handler
 def cmd_start(message):
     sessions[message.chat.id] = new_session()
     bot.reply_to(
@@ -53,6 +75,7 @@ def cmd_start(message):
 
 
 @bot.message_handler(commands=["skip"])
+@safe_handler
 def cmd_skip(message):
     s = get_session(message.chat.id)
     if s["state"] != "await_answer_key":
@@ -64,6 +87,7 @@ def cmd_skip(message):
 # Document handling
 # --------------------------------------------------------------------
 @bot.message_handler(content_types=["document"])
+@safe_handler
 def handle_document(message):
     chat_id = message.chat.id
     s = get_session(chat_id)
@@ -164,6 +188,7 @@ def _handle_answer_key_upload(message, path):
 
 
 @bot.callback_query_handler(func=lambda c: c.data == "skip_key")
+@safe_handler
 def cb_skip_key(call):
     bot.answer_callback_query(call.id)
     start_quiz(call.message.chat.id)
@@ -230,6 +255,7 @@ def send_question(chat_id):
 
 
 @bot.callback_query_handler(func=lambda c: c.data.startswith("ans:"))
+@safe_handler
 def cb_answer(call):
     chat_id = call.message.chat.id
     s = get_session(chat_id)
