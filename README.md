@@ -1,42 +1,32 @@
 # HSK Test Bot
 
-Rasmiy HSK imtihon PDF faylini yuklang — bot uni tahlil qilib,
-Telegram ichida interaktiv testga aylantiradi. Ixtiyoriy ravishda
-javoblar kaliti PDF faylini ham yuborsangiz, test oxirida bot
-javoblaringizni tekshirib, ballingizni chiqarib beradi.
+Rasmiy HSK imtihon PDF'larini interaktiv Telegram testlariga aylantiruvchi bot.
+Yolg'iz yoki do'stlar bilan (xona rejimida, vaqt va reyting bilan) yechish mumkin.
 
 ## Fayllar
+- `main.py` — bot (test oqimi, xonalar, admin panel)
+- `db.py` — JSON-asosli doimiy test kutubxonasi
+- `hsk_parser.py` — imtihon PDF parseri (HSK1-6, universal)
+- `answer_parser.py` — javoblar kaliti PDF parseri
+- `requirements.txt` — kutubxonalar
 
-- `main.py` — bot logikasi (polling, hujjat qabul qilish, test oqimi)
-- `hsk_parser.py` — imtihon PDF'ini savol/variantlarga ajratuvchi parser
-- `answer_parser.py` — rasmiy javoblar kaliti PDF'ini o'qivchi parser
-- `requirements.txt` — kerakli kutubxonalar
+## Foydalanuvchi imkoniyatlari
+- PDF yuborish -> avtomatik tahlil -> test
+- /tests -> kutubxonadagi tayyor testlar (HSK darajasi bo'yicha)
+- Yolg'iz rejim: vaqt o'lchanadi, oxirida ball (javob kaliti bo'lsa)
+- Xona rejimi: havola ulashiladi, 3-2-1 sanoq, hammaga bir xil savollar,
+  jonli reyting (ball birinchi, teng bo'lsa vaqt hal qiladi)
 
-## Qanday ishlaydi
+## Admin (faqat ADMIN_ID)
+- /admin -> kutubxona ro'yxati, testlarni o'chirish
+- Javoblar kaliti PDF yuborsa -> qaysi testga biriktirishni tanlaydi
+- Dublikat testlar avtomatik birlashadi: ko'proq savolli versiya qoladi
 
-1. `/start` — botni ishga tushirish
-2. HSK imtihon PDF faylini yuborasiz (masalan H51001.pdf)
-3. Bot tahlil qiladi: daraja, imtihon kodi, nechta savol topilgani
-4. Ixtiyoriy: javoblar kaliti PDF faylini yuborasiz, yoki `/skip`
-5. Test boshlanadi — har bir savol uchun A/B/C/D tugmalari chiqadi
-6. Oxirida natija: agar javoblar kaliti berilgan bo'lsa — ball va
-   har bir savol bo'yicha to'g'ri/xato; bo'lmasa — faqat tanlovlar
+## O'rnatish (Railway)
+Environment variables:
+- `BOT_TOKEN` — BotFather'dan
+- `ADMIN_ID` — admin Telegram ID (standart: 660086073)
+- `DB_PATH` — ixtiyoriy; doimiy saqlash uchun Volume ulab `/data/exams_db.json`
+  qiymatini bering (aks holda har deploy'da kutubxona tozalanadi!)
 
-## Parser haqida
-
-Parser aniq shu H51001 fayliga moslashtirilmagan — u HSK imtihonlar
-uchun umumiy bo'lgan tuzilishni (raqamlangan savollar, A-D variantlar,
-ikki ustunli tinglash bo'limi, umumiy matnli o'qish savollari,
-javoblar kaliti jadvali) avtomatik aniqlaydi. Shu sababli boshqa HSK
-darajalari (1-6) va boshqa yillardagi rasmiy PDF fayllar bilan ham
-ishlashi kutiladi, lekin har bir PDF export'ining o'z formatlashi
-farq qilishi mumkin — parser ba'zi savollarni topa olmasa, ular
-shunchaki testga kiritilmaydi (xato bermaydi).
-
-Yozma bo'lim (gap to'ldirish, insho) avtomatik tekshirilmaydi —
-bular matn sifatida ko'rsatiladi, lekin ball hisoblanmaydi.
-
-## O'rnatish (Render/Railway)
-
-`BOT_TOKEN` environment variable'ini qo'shing (BotFather'dan olingan
-token). Start command: `python3 main.py`.
+Start command: `python3 main.py`
